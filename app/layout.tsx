@@ -37,12 +37,14 @@ export const metadata: Metadata = {
     url: "https://reader.dev",
     siteName: "Reader",
     type: "website",
+    images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Reader - Open-source web scraping for LLMs",
     description:
       "Production-grade web scraping engine. Two primitives. Clean markdown. Ready for your agents.",
+    images: ["/og-image.png"],
   },
 };
 
