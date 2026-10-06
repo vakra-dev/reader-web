@@ -20,9 +20,7 @@ export function Footer() {
 
           <div className="flex items-center gap-6">
             <a
-              href="https://docs.reader.dev"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/docs"
               className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
             >
               Documentation

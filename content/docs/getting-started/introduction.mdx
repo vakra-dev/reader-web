@@ -1,0 +1,38 @@
+---
+title: "Introduction"
+description: "Open-source web scraping engine for LLMs - Node library, CLI, and deployment scripts."
+---
+
+Reader is an open-source web scraping engine built for LLMs, distributed under Apache 2.0. Two primitives, clean markdown, ready for your agents.
+
+<Card title="reader on GitHub" href="https://github.com/vakra-dev/reader" horizontal icon="github">
+  Full source, issues, Dockerfile, and examples.
+</Card>
+
+## What Reader gives you
+
+- **`ReaderClient`** - high-level API with lazy initialization, browser pool management, and proxy rotation
+- **`scrape()` and `crawl()`** - the two core primitives for turning URLs into clean content
+- **Playwright browser engine** - full headless Chrome with JavaScript execution and anti-bot bypass via stealth plugin
+- **Proxy tiers** - standard (datacenter) and premium (residential) proxy pools, selectable per request
+- **Browser pool** - recycled Chrome instances with health checks and graceful retirement
+- **CLI** - one-off scrapes, crawls, and a daemon mode with shared pool
+- **Pluggable config** - domain profiles, block detection, and URL rewriters are all caller-provided
+- **Deployment scripts** - production-ready Dockerfile and Docker Compose setup
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/docs/getting-started/installation">
+    Install the package and its system dependencies.
+  </Card>
+  <Card title="Quickstart" icon="bolt" href="/docs/getting-started/quickstart">
+    Make your first scrape in 60 seconds.
+  </Card>
+  <Card title="Examples" icon="code" href="/docs/getting-started/examples">
+    Real runnable examples for every feature.
+  </Card>
+  <Card title="API Reference" icon="book" href="/docs/api-reference/reader-client">
+    Full type reference for every option and result.
+  </Card>
+</CardGroup>

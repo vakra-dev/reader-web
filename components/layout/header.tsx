@@ -18,19 +18,17 @@ export function Header() {
 
         <nav className="flex items-center gap-6">
           <Link
-            href="/playground"
+            href="/markdown"
             className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
           >
-            Playground
+            Markdown
           </Link>
-          <a
-            href="https://docs.reader.dev"
-            target="_blank"
-            rel="noopener noreferrer"
+          <Link
+            href="/docs"
             className="text-sm text-neutral-600 hover:text-neutral-900 transition-colors"
           >
             Docs
-          </a>
+          </Link>
           <a
             href="https://github.com/vakra-dev/reader"
             target="_blank"

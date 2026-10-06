@@ -1,0 +1,120 @@
+---
+title: "Proxy Tiers"
+description: "Standard vs premium proxies: datacenter and residential, rotation, and when to use each."
+---
+
+Proxies are how Reader scrapes sites that would otherwise block or rate-limit a single IP. Reader supports **two tiers** with very different cost and capability profiles.
+
+## The two tiers
+
+### Standard (datacenter)
+
+- **Fast** (~50-100ms overhead per request)
+- **Cheap** (pennies per GB)
+- **Easily detected** by sophisticated anti-bot systems - the IP range is a known datacenter
+- **Great for**: APIs, blogs, docs, news sites, anything without aggressive bot protection
+
+### Premium (residential)
+
+- **Slow** (300-800ms overhead per request)
+- **Expensive** (dollars per GB)
+- **Indistinguishable from a real user** - the IP is a real home ISP
+- **Great for**: Amazon, LinkedIn, ticketing sites, anything that aggressively blocks datacenters
+
+You'll use standard for the vast majority of requests and premium only when necessary.
+
+## Configuring both tiers
+
+```javascript
+const reader = new ReaderClient({
+  proxyPools: {
+    standard: [
+      { url: "http://user:pass@dc1.example.com:8080" },
+      { url: "http://user:pass@dc2.example.com:8080" },
+    ],
+    premium: [
+      {
+        type: "residential",
+        host: "residential.proxy-provider.com",
+        port: 12321,
+        username: "customer-abc",
+        password: "secret",
+        country: "us",
+      },
+    ],
+  },
+});
+```
+
+Both pools can have any number of proxies. Rotation within a tier is round-robin by default (or `random` via `proxyRotation`).
+
+## Tier selection per request
+
+Two modes:
+
+### Explicit standard
+
+```javascript
+await reader.scrape({
+  urls: ["https://news.example.com/article"],
+  proxyTier: "standard",
+});
+```
+
+Always pulls from the standard (datacenter) pool. Cheapest option - use when you know the target doesn't need residential.
+
+### Explicit premium
+
+```javascript
+await reader.scrape({
+  urls: ["https://www.amazon.com/dp/B08N5WRWNW"],
+  proxyTier: "premium",
+});
+```
+
+Always pulls from the premium (residential) pool. Use when you know the target needs residential - don't waste resources trying standard first.
+
+## Sticky sessions for premium
+
+Premium (residential) proxies are typically billed per-request AND per-IP - cycling IPs on every request is wasteful and also tends to trigger anti-bot systems (real users don't jump IPs mid-session).
+
+Reader handles this with **sticky sessions**: for premium proxies, Reader generates a unique session ID and passes it to the proxy provider in the URL:
+
+```
+http://customer-abc_session-reader_1234567_abc_country-us:secret@residential.proxy-provider.com:12321
+```
+
+The `session-reader_...` parameter tells the provider "keep this IP for this session." All requests in the same crawl session use the same IP, mimicking a real user.
+
+## Flat proxy list (legacy)
+
+If you only have one tier of proxies, use the flat `proxies` option instead of `proxyPools`:
+
+```javascript
+const reader = new ReaderClient({
+  proxies: [
+    { host: "dc1.example.com", port: 8080, username: "u", password: "p" },
+    { host: "dc2.example.com", port: 8080, username: "u", password: "p" },
+  ],
+  proxyRotation: "round-robin",
+});
+```
+
+No tier selection - every request rotates through the flat pool. Simpler but less flexible than multi-tier pools.
+
+## Per-crawl stickiness
+
+During a `crawl()` session, Reader picks **one proxy at the start** and uses it for every request in that crawl. Rotating mid-crawl would trigger anti-bot systems on sites that track session continuity.
+
+If you want different crawls to use different proxies, just call `crawl()` multiple times - each invocation picks a fresh proxy from the pool.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Proxy Configuration guide" icon="network-wired" href="/docs/guides/proxy-configuration">
+    Practical setup for single proxies, pools, and tier selection.
+  </Card>
+  <Card title="Scraping Engine" icon="layer-group" href="/docs/concepts/engine-waterfall">
+    How the Playwright engine and proxy tiers work together.
+  </Card>
+</CardGroup>

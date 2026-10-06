@@ -1,0 +1,80 @@
+---
+title: "Browser Sessions"
+description: "Launch stealthed Chrome for Playwright/Puppeteer automation"
+---
+
+# Browser Sessions
+
+The `browser()` primitive launches a stealthed Chrome instance and returns a CDP WebSocket URL. Connect Playwright or Puppeteer to automate pages with anti-bot stealth active.
+
+## How It Works
+
+```
+reader.browser()
+    │
+    ├── Spawns a dedicated Chrome process via child_process.spawn
+    ├── Applies stealth flags and emulation scripts
+    ├── Extracts CDP WebSocket URL
+    │
+    ▼
+session.wsEndpoint  →  Playwright/Puppeteer connects
+```
+
+Each session gets its own Chrome process, spawned directly (not from the Playwright pool). This isolates sessions from scraping throughput.
+
+## Stealth Features
+
+Sessions apply stealth via Chrome flags and emulation scripts:
+
+| Feature | Active | Mechanism |
+|---------|--------|-----------|
+| `webdriver = false` | Yes | `Page.addScriptToEvaluateOnNewDocument` |
+| Navigator spoofing | Yes | injected at BrowserContext level |
+| WebGL fingerprinting | Yes | injected at BrowserContext level |
+| WebRTC IP masking | Yes | injected at BrowserContext level |
+
+Sessions use direct Chrome spawn (the same as the scrape engine), so all stealth features are applied identically.
+
+## Usage
+
+```typescript
+import { ReaderClient } from "@vakra-dev/reader";
+import { chromium } from "playwright-core";
+
+const reader = new ReaderClient();
+const session = await reader.browser({ timeoutMs: 300_000 });
+
+const browser = await chromium.connectOverCDP(session.wsEndpoint);
+const context = await browser.newContext();
+const page = await context.newPage();
+
+await page.goto("https://example.com");
+console.log(await page.title());
+
+await browser.close();
+await session.close();
+```
+
+## CLI
+
+```bash
+# Create session (standalone)
+reader browser create --standalone
+
+# With daemon running
+reader browser create
+reader browser list
+reader browser stop <sessionId>
+```
+
+## Resource Usage
+
+- Each session uses ~300MB memory (Chrome process)
+- Sessions are isolated from the scrape/crawl pool
+- Default timeout: 5 minutes (configurable via `timeoutMs`)
+
+## Related
+
+- [Browser Sessions Guide](/docs/guides/browser-sessions) - Full examples
+- [API Reference](/docs/api-reference/browser-session) - Options and types
+- [Browser Pool](/docs/concepts/browser-pool) - Shared pool used by scrape/crawl

@@ -3,6 +3,7 @@ import { Footer } from "@/components/layout/footer";
 import { Hero } from "@/components/home/hero";
 import { Features } from "@/components/home/features";
 import { CodeExample } from "@/components/home/code-example";
+import { MarkdownCTA } from "@/components/home/markdown-cta";
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <main className="flex-1">
         <Hero />
         <CodeExample />
+        <MarkdownCTA />
         <Features />
       </main>
       <Footer />

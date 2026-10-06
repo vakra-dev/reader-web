@@ -32,6 +32,15 @@ code {
   @apply font-mono;
 }
 
+/* Hide scrollbars but keep scrolling */
+.scrollbar-hidden {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none;
+}
+
 /* Selection */
 ::selection {
   @apply bg-accent-500/30;

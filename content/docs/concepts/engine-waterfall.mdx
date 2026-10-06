@@ -1,0 +1,56 @@
+---
+title: "Scraping Engine"
+description: "Playwright browser engine with proxy tier support for reliable scraping."
+---
+
+Reader uses a single scraping engine: **Playwright** - a full headless Chrome browser connected via CDP. Chrome is spawned directly via `child_process.spawn` and Playwright connects over the Chrome DevTools Protocol. Every scrape runs through this engine, which handles JavaScript execution and anti-bot bypass via Chrome flags and the playwright-extra stealth plugin.
+
+## Why a single engine?
+
+A browser engine handles everything a simpler HTTP client can, plus everything it can't. Sites that serve static HTML work fine in a browser. Sites that require JavaScript, handle Cloudflare challenges, or check TLS fingerprints also work - because it's a real browser.
+
+The tradeoff is speed: a plain HTTP fetch completes in ~100ms, while a browser page load takes 1-5 seconds. In practice, the reliability gain far outweighs the latency cost - failed scrapes that require retries are slower than a single browser-based scrape that succeeds on the first try.
+
+## How a scrape runs
+
+Each scrape attempt opens a fresh tab in a warm Chrome process (the browser pool keeps Chrome running between requests):
+
+```
+1. Open new tab in warm Chrome
+2. Navigate to URL (goto → DomContentLoaded → PaintingStable)
+3. Wait for optional selector (if waitForSelector is set)
+4. Extract outerHTML from the rendered DOM
+5. Close tab (Chrome stays alive for next request)
+```
+
+The browser is bound to a specific proxy, so all traffic from that tab routes through the configured proxy IP.
+
+## Proxy tier selection
+
+The proxy tier used for a scrape is determined by the `proxyTier` option:
+
+- **`standard`** (datacenter proxies): fast and cheap. Works for most sites.
+- **`premium`** (residential proxies): uses real household IPs. Bypasses anti-bot systems that block datacenter IP ranges.
+
+If no `proxyTier` is set, Reader uses whichever proxy is configured as the default for the client.
+
+## Quality check
+
+After the engine returns HTML, the orchestrator runs a minimal quality check:
+
+- **HTTP 2xx/3xx with any text content** → pass
+- **HTTP 2xx with empty body** → fail (`empty_content`)
+- **HTTP 4xx/5xx with empty body** → fail (`http_error`)
+
+Bot page detection (200 + block content) is handled separately by the scraper's block detection config, which is provided by the caller - Reader itself is unopinionated about what constitutes a "blocked" page.
+
+## Where to go next
+
+<CardGroup cols={2}>
+  <Card title="Proxy Tiers" icon="arrows-rotate" href="/docs/concepts/proxy-tiers">
+    How standard and premium proxies are managed.
+  </Card>
+  <Card title="Error Handling" icon="shield-halved" href="/docs/concepts/error-handling">
+    What happens when scraping fails.
+  </Card>
+</CardGroup>
